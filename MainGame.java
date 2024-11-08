@@ -194,12 +194,33 @@ public class MainGame {
     }
     
     private void iniciarJuego() {
-        mazoJugador1 = generarMazoInicial();
-        mazoJugador2 = modoBot ? generarMazoBot() : generarMazoInicial();
-        
-        JPanel panelJuego = crearPantallaJuego();
+        JuegoCartas juego = new JuegoCartas(jugador1, jugador2);
+        JPanel panelJuego = crearPantallaJuego(juego);
         mainPanel.add(panelJuego, "JUEGO");
         cardLayout.show(mainPanel, "JUEGO");
+    
+        // Iniciar el juego
+        iniciarDuelos(juego);
+    }
+
+    private void iniciarDuelos(JuegoCartas juego) {
+        while (juego.hayCartasRestantes()) {
+            String nutriente = juego.seleccionarNutrienteAleatorio();
+            juego.jugarDuelo(nutriente);
+        }
+    
+        // Determinar el ganador
+        determinarGanador(jugador1, jugador2);
+    }
+    
+    private void determinarGanador(Personaje jugador1, Personaje jugador2) {
+        if (jugador1.getPuntos() > jugador2.getPuntos()) {
+            JOptionPane.showMessageDialog(frame, "¡El Jugador 1 ha ganado!");
+        } else if (jugador2.getPuntos() > jugador1.getPuntos()) {
+            JOptionPane.showMessageDialog(frame, "¡El Jugador 2 ha ganado!");
+        } else {
+            JOptionPane.showMessageDialog(frame, "¡Es un empate!");
+        }
     }
     
     private ArrayList<Carta> generarMazoInicial() {
@@ -214,9 +235,12 @@ public class MainGame {
         return mazo;
     }
     
-    private JPanel crearPantallaJuego() {
+    private JPanel crearPantallaJuego(JuegoCartas juego) {
         JPanel panel = new JPanel(new BorderLayout());
-        // Implementar la interfaz del juego
+    
+        // Agregar los componentes de la interfaz de juego
+        // ...
+    
         return panel;
     }
     

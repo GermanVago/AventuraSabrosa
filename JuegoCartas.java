@@ -1,29 +1,46 @@
-// JuegoCartas.java
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 public class JuegoCartas {
     private ArrayList<Carta> mazoJugador1;
     private ArrayList<Carta> mazoJugador2;
     private Personaje jugador1;
     private Personaje jugador2;
+    private Random random;
 
     public JuegoCartas(Personaje jugador1, Personaje jugador2) {
         this.jugador1 = jugador1;
         this.jugador2 = jugador2;
         this.mazoJugador1 = generarMazoInicial();
-        this.mazoJugador2 = generarMazoInicial();
+        this.mazoJugador2 = generarMazoBot();
+        this.random = new Random();
     }
 
     private ArrayList<Carta> generarMazoInicial() {
         ArrayList<Carta> mazo = new ArrayList<>();
 
-        // Agregar cartas de alimentos aquí
-        mazo.add(new Carta("Manzana", 2, 14, 0, 4, "manzana.png"));
-        mazo.add(new Carta("Hamburguesa", 15, 30, 20, 2, "hamburguesa.png"));
-        mazo.add(new Carta("Zanahoria", 1, 10, 0, 6, "zanahoria.png"));
-        mazo.add(new Carta("Soda", 0, 40, 0, 0, "soda.png"));
-        // Agrega más cartas según sea necesario
+        // Agregar cartas de alimentos
+        mazo.add(new Carta("Chocolate", 5, 25, 15, 2, "/resources/Cartas/Cartas Foodtrash/Comida_chocolate.png"));
+        mazo.add(new Carta("Hamburguesa", 10, 30, 20, 2, "/resources/Cartas/Cartas Foodtrash/Foodtrash_Hamburguesa.png"));
+        mazo.add(new Carta("Hot Dog", 8, 25, 15, 1, "/resources/Cartas/Cartas Foodtrash/Foodtrash_HotDog.png"));
+        mazo.add(new Carta("Pizza", 12, 35, 18, 3, "/resources/Cartas/Cartas Foodtrash/Foodtrash_Pizza.png"));
+        mazo.add(new Carta("Soda", 0, 40, 0, 0, "/resources/Cartas/Cartas Foodtrash/Foodtrash_Soda.png"));
+
+        // Barajar el mazo
+        Collections.shuffle(mazo);
+        return mazo;
+    }
+
+    private ArrayList<Carta> generarMazoBot() {
+        ArrayList<Carta> mazo = new ArrayList<>();
+
+        // Agregar cartas de alimentos para el bot (Señor Grasoso)
+        mazo.add(new Carta("Chocolate", 5, 25, 15, 2, "/resources/Cartas/Cartas Foodtrash/Comida_chocolate.png"));
+        mazo.add(new Carta("Hamburguesa", 10, 30, 20, 2, "/resources/Cartas/Cartas Foodtrash/Foodtrash_Hamburguesa.png"));
+        mazo.add(new Carta("Hot Dog", 8, 25, 15, 1, "/resources/Cartas/Cartas Foodtrash/Foodtrash_HotDog.png"));
+        mazo.add(new Carta("Pizza", 12, 35, 18, 3, "/resources/Cartas/Cartas Foodtrash/Foodtrash_Pizza.png"));
+        mazo.add(new Carta("Soda", 0, 40, 0, 0, "/resources/Cartas/Cartas Foodtrash/Foodtrash_Soda.png"));
 
         // Barajar el mazo
         Collections.shuffle(mazo);
@@ -63,13 +80,22 @@ public class JuegoCartas {
 
     private void mostrarCartasEnPantalla(Carta carta1, Carta carta2) {
         // Implementar la lógica para mostrar las cartas en la interfaz gráfica
+        System.out.println("Carta 1: " + carta1.getNombre() + " - Imagen: " + carta1.getImagen());
+        System.out.println("Carta 2: " + carta2.getNombre() + " - Imagen: " + carta2.getImagen());
     }
 
     private void mostrarPuntajes() {
         // Implementar la lógica para mostrar los puntajes de los jugadores en la interfaz
+        System.out.println("Puntaje Jugador 1: " + jugador1.getPuntos());
+        System.out.println("Puntaje Jugador 2: " + jugador2.getPuntos());
     }
 
     public boolean hayCartasRestantes() {
         return !mazoJugador1.isEmpty() && !mazoJugador2.isEmpty();
+    }
+
+    public String seleccionarNutrienteAleatorio() {
+        String[] nutrientes = {"proteina", "carbohidratos", "grasas", "vitaminas"};
+        return nutrientes[random.nextInt(nutrientes.length)];
     }
 }
