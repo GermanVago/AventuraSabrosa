@@ -49,4 +49,14 @@ public class Personaje {
         nivel++;
         // Aquí podrías modificar la imagen según el nivel
     }
+
+    public PersonajeInfo getInfo() {
+        return info;
+    }
+    
+    public void reiniciarPuntos() {
+        this.puntos = 0;
+        this.nivel = 1;
+    }
+
 }

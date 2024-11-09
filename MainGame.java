@@ -203,45 +203,208 @@ public class MainGame {
         iniciarDuelos(juego);
     }
 
-    private void iniciarDuelos(JuegoCartas juego) {
-        while (juego.hayCartasRestantes()) {
-            String nutriente = juego.seleccionarNutrienteAleatorio();
-            juego.jugarDuelo(nutriente);
-        }
-    
-        // Determinar el ganador
+private void iniciarDuelos(JuegoCartas juego) {
+    if (!juego.hayCartasRestantes()) {
         determinarGanador(jugador1, jugador2);
+        return;
     }
     
-    private void determinarGanador(Personaje jugador1, Personaje jugador2) {
-        if (jugador1.getPuntos() > jugador2.getPuntos()) {
-            JOptionPane.showMessageDialog(frame, "¡El Jugador 1 ha ganado!");
-        } else if (jugador2.getPuntos() > jugador1.getPuntos()) {
-            JOptionPane.showMessageDialog(frame, "¡El Jugador 2 ha ganado!");
-        } else {
-            JOptionPane.showMessageDialog(frame, "¡Es un empate!");
-        }
-    }
-    
-    private ArrayList<Carta> generarMazoInicial() {
-        ArrayList<Carta> mazo = new ArrayList<>();
-        // Aquí agregarías las cartas con sus valores nutricionales
-        return mazo;
-    }
-    
-    private ArrayList<Carta> generarMazoBot() {
-        ArrayList<Carta> mazo = new ArrayList<>();
-        // Aquí agregarías las cartas específicas para el bot
-        return mazo;
-    }
+    // El juego ahora se maneja por turnos a través de la interfaz gráfica
+    // La lógica de juego se ha movido a los event listeners de los botones
+}
     
     private JPanel crearPantallaJuego(JuegoCartas juego) {
         JPanel panel = new JPanel(new BorderLayout());
+        
+        // Panel superior para información del juego
+        JPanel infoPanel = new JPanel(new GridLayout(1, 3));
+        JLabel jugador1Label = new JLabel("Jugador 1: " + jugador1.getPuntos() + " pts");
+        JLabel turnLabel = new JLabel("Turno: Jugador 1", SwingConstants.CENTER);
+        JLabel jugador2Label = new JLabel("Bot: " + jugador2.getPuntos() + " pts", SwingConstants.RIGHT);
+        infoPanel.add(jugador1Label);
+        infoPanel.add(turnLabel);
+        infoPanel.add(jugador2Label);
+        panel.add(infoPanel, BorderLayout.NORTH);
     
-        // Agregar los componentes de la interfaz de juego
-        // ...
+        // Panel central para las cartas
+        JPanel cartasPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+        
+        // Panel para la carta del jugador 1
+        JPanel jugador1Panel = new JPanel(new BorderLayout());
+        JLabel cartaJugador1 = new JLabel();
+        cartaJugador1.setPreferredSize(new Dimension(200, 300));
+        jugador1Panel.add(cartaJugador1, BorderLayout.CENTER);
+        
+        // Panel para la carta del bot
+        JPanel jugador2Panel = new JPanel(new BorderLayout());
+        JLabel cartaJugador2 = new JLabel();
+        cartaJugador2.setPreferredSize(new Dimension(200, 300));
+        jugador2Panel.add(cartaJugador2, BorderLayout.CENTER);
+        
+        cartasPanel.add(jugador1Panel);
+        cartasPanel.add(jugador2Panel);
+        panel.add(cartasPanel, BorderLayout.CENTER);
     
+        // Panel inferior para controles
+        JPanel controlPanel = new JPanel(new FlowLayout());
+        
+        // Botones de nutrientes
+        JButton btnProteina = new JButton("Proteína");
+        JButton btnCarbohidratos = new JButton("Carbohidratos");
+        JButton btnGrasas = new JButton("Grasas");
+        JButton btnVitaminas = new JButton("Vitaminas");
+        JButton btnRobarCarta = new JButton("Robar Carta");
+    
+        // Acción para robar carta
+        btnRobarCarta.addActionListener(e -> {
+            Carta cartaJugador = juego.robarCartaJugador1();
+            if (cartaJugador != null) {
+                ImageIcon iconJugador = new ImageIcon(getClass().getResource(cartaJugador.getImagen()));
+                Image imgJugador = iconJugador.getImage().getScaledInstance(200, 300, Image.SCALE_SMOOTH);
+                cartaJugador1.setIcon(new ImageIcon(imgJugador));
+                
+                // El bot roba su carta automáticamente
+                Carta cartaBot = juego.robarCartaJugador2();
+                if (cartaBot != null) {
+                    ImageIcon iconBot = new ImageIcon(getClass().getResource(cartaBot.getImagen()));
+                    Image imgBot = iconBot.getImage().getScaledInstance(200, 300, Image.SCALE_SMOOTH);
+                    cartaJugador2.setIcon(new ImageIcon(imgBot));
+                    
+                    // Habilitar botones de nutrientes
+                    btnProteina.setEnabled(true);
+                    btnCarbohidratos.setEnabled(true);
+                    btnGrasas.setEnabled(true);
+                    btnVitaminas.setEnabled(true);
+                    btnRobarCarta.setEnabled(false);
+                }
+            }
+        });
+    
+        // Configurar acciones para los botones de nutrientes
+        ActionListener nutrienteListener = e -> {
+            JButton btnPresionado = (JButton) e.getSource();
+            String nutriente = btnPresionado.getText().toLowerCase();
+            
+            juego.jugarDuelo(nutriente);
+            
+            // Actualizar puntuaciones
+            jugador1Label.setText("Jugador 1: " + jugador1.getPuntos() + " pts");
+            jugador2Label.setText("Bot: " + jugador2.getPuntos() + " pts");
+            
+            // Limpiar cartas y preparar siguiente ronda
+            cartaJugador1.setIcon(null);
+            cartaJugador2.setIcon(null);
+            
+            // Deshabilitar botones de nutrientes y habilitar robar carta
+            btnProteina.setEnabled(false);
+            btnCarbohidratos.setEnabled(false);
+            btnGrasas.setEnabled(false);
+            btnVitaminas.setEnabled(false);
+            btnRobarCarta.setEnabled(true);
+            
+            // Verificar si el juego ha terminado
+            if (!juego.hayCartasRestantes()) {
+                determinarGanador(jugador1, jugador2);
+                cardLayout.show(mainPanel, "MENU");
+            }
+        };
+    
+        btnProteina.addActionListener(nutrienteListener);
+        btnCarbohidratos.addActionListener(nutrienteListener);
+        btnGrasas.addActionListener(nutrienteListener);
+        btnVitaminas.addActionListener(nutrienteListener);
+        
+        // Inicialmente, deshabilitar botones de nutrientes
+        btnProteina.setEnabled(false);
+        btnCarbohidratos.setEnabled(false);
+        btnGrasas.setEnabled(false);
+        btnVitaminas.setEnabled(false);
+    
+        controlPanel.add(btnRobarCarta);
+        controlPanel.add(btnProteina);
+        controlPanel.add(btnCarbohidratos);
+        controlPanel.add(btnGrasas);
+        controlPanel.add(btnVitaminas);
+        
+        // Agregar panel de consejos del Diablito
+        JPanel consejoPanel = new JPanel(new FlowLayout());
+        JLabel consejoLabel = new JLabel();
+        JButton btnConsejo = new JButton("¿Qué dice el Diablito?");
+        btnConsejo.addActionListener(e -> {
+            String consejo = Diablito.obtenerConsejoAleatorio();
+            consejoLabel.setText(consejo);
+        });
+        consejoPanel.add(btnConsejo);
+        consejoPanel.add(consejoLabel);
+        
+        // Panel para información de cartas restantes
+        JPanel cartasRestantesPanel = new JPanel(new FlowLayout());
+        JLabel cartasRestantesLabel = new JLabel("Cartas restantes: " + juego.getCartasRestantesJugador1());
+        cartasRestantesPanel.add(cartasRestantesLabel);
+        
+        // Panel combinado para controles inferiores
+        JPanel bottomPanel = new JPanel(new GridLayout(3, 1));
+        bottomPanel.add(controlPanel);
+        bottomPanel.add(consejoPanel);
+        bottomPanel.add(cartasRestantesPanel);
+        
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+        
+        // Timer para actualizar la información
+        Timer updateTimer = new Timer(1000, e -> {
+            cartasRestantesLabel.setText("Cartas restantes: " + juego.getCartasRestantesJugador1());
+        });
+        updateTimer.start();
+        
         return panel;
+    }
+    
+    // Actualización del método determinarGanador
+    private void determinarGanador(Personaje jugador1, Personaje jugador2) {
+        String mensaje;
+        if (jugador1.getPuntos() > jugador2.getPuntos()) {
+            mensaje = "¡Felicidades! Has ganado al Señor Grasoso\n" +
+                     "Puntaje final:\n" +
+                     "Tú: " + jugador1.getPuntos() + " puntos\n" +
+                     "Señor Grasoso: " + jugador2.getPuntos() + " puntos";
+        } else if (jugador2.getPuntos() > jugador1.getPuntos()) {
+            mensaje = "¡El Señor Grasoso ha ganado!\n" +
+                     "Puntaje final:\n" +
+                     "Señor Grasoso: " + jugador2.getPuntos() + " puntos\n" +
+                     "Tú: " + jugador1.getPuntos() + " puntos";
+        } else {
+            mensaje = "¡Es un empate!\n" +
+                     "Puntaje final: " + jugador1.getPuntos() + " puntos";
+        }
+        
+        int opcion = JOptionPane.showConfirmDialog(
+            frame,
+            mensaje + "\n¿Quieres jugar otra vez?",
+            "Fin del juego",
+            JOptionPane.YES_NO_OPTION
+        );
+        
+        if (opcion == JOptionPane.YES_OPTION) {
+            reiniciarJuego();
+        } else {
+            cardLayout.show(mainPanel, "MENU");
+        }
+    }
+    
+    // Método para reiniciar el juego
+    private void reiniciarJuego() {
+        // Reiniciar puntuaciones
+        jugador1 = new Personaje(jugador1.getInfo());
+        jugador2 = new Personaje(jugador2.getInfo());
+        
+        // Crear nuevo juego
+        JuegoCartas nuevoJuego = new JuegoCartas(jugador1, jugador2);
+        JPanel panelJuego = crearPantallaJuego(nuevoJuego);
+        
+        // Reemplazar el panel de juego anterior
+        mainPanel.remove(mainPanel.getComponent(mainPanel.getComponentCount() - 1));
+        mainPanel.add(panelJuego, "JUEGO");
+        cardLayout.show(mainPanel, "JUEGO");
     }
     
     public static void main(String[] args) {
