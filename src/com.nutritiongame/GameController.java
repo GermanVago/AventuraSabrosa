@@ -33,12 +33,16 @@ public class GameController {
     public Image loadImage(String path) {
         if (!imageCache.containsKey(path)) {
             try {
-                // Simple file path from project root
-                File file = new File("src" + path);
+                // Fix path by ensuring proper separator between src and resources
+                String fullPath = "src" + (path.startsWith("/") ? "" : "/") + path;
+                File file = new File(fullPath);
+
                 if (!file.exists()) {
                     System.err.println("Cannot find image: " + file.getAbsolutePath());
                     return createPlaceholderImage();
                 }
+
+                System.out.println("Loading image from: " + file.getAbsolutePath());
                 ImageIcon icon = new ImageIcon(file.getAbsolutePath());
                 imageCache.put(path, icon.getImage());
             } catch (Exception e) {

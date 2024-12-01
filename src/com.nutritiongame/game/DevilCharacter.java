@@ -18,7 +18,7 @@ public class DevilCharacter {
 
     public DevilCharacter() {
         // Updated path for the devil image
-        devilImage = GameController.getInstance().loadImage("/images/ui/diablito.png");
+        devilImage = GameController.getInstance().loadImage("/resources/images/ui/Diablo.png");
         random = new Random();
         isVisible = false;
         position = new Point(0, 0);
