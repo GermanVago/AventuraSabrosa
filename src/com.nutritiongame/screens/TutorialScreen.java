@@ -1,180 +1,95 @@
 package com.nutritiongame.screens;
 
-import com.nutritiongame.GameController;
 import com.nutritiongame.Screen;
-import com.nutritiongame.tutorial.TutorialStep;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TutorialScreen extends JPanel implements Screen {
-    private List<TutorialStep> steps;
-    private int currentStep;
-    private Image backgroundImage;
-    private JButton nextButton;
-    private JButton previousButton;
-    private JButton skipButton;
-    
+    private final String[] messages;
+    private int currentMessage;
+    private final Image background;
+    private final Image doctor;
+
     public TutorialScreen() {
         setLayout(null);
-        backgroundImage = GameController.getInstance().loadImage("/resources/tutorial_background.png");
-        initializeSteps();
-        setupButtons();
+        currentMessage = 0;
+
+        // Mensajes completos del tutorial
+        messages = new String[]{
+                "¡Hola, amiguito! Soy la Dra. Saludable, y estoy aquí para enseñarte algo muy importante: " +
+                        "cómo elegir alimentos saludables para que tengas energía, fuerza, ¡y te sientas increíble todos los días! ¿Listo para aprender?",
+                "Primero que nada, quiero que sepas que no todos los alimentos nos hacen bien. Algunos son excelentes " +
+                        "para que crezcas sano y fuerte, como las frutas, las verduras y los cereales. Pero otros, como las papas fritas, " +
+                        "los refrescos y los dulces, pueden ser deliciosos, pero si los comes demasiado, no le hacen bien a tu cuerpo.",
+                "Por ejemplo, las frutas como la manzana, el plátano y la sandía son buenísimas para ti. Tienen vitaminas que " +
+                        "te ayudan a crecer y a mantenerte fuerte. Y las verduras, como el pepino y la zanahoria, son como pequeños superhéroes: " +
+                        "te dan energía y cuidan tu cuerpo para que no te enfermes.",
+                "Ahora, cuidado con alimentos como las hamburguesas, la pizza, los refrescos o los chocolates. No son malos si los " +
+                        "comes de vez en cuando, pero si los comes todos los días, tu cuerpo puede sentirse cansado, ¡y podrías perder toda tu energía para jugar y aprender cosas nuevas!",
+                "¿Sabías que elegir alimentos saludables también te ayuda a concentrarte en la escuela y a jugar mejor? " +
+                        "Es como si le dieras a tu cuerpo el combustible correcto, como un coche que necesita buena gasolina para correr rápido.",
+                "La clave está en el equilibrio: come más frutas y verduras todos los días, toma agua en lugar de refrescos, " +
+                        "y haz un poco de ejercicio. ¡Tu cuerpo te lo agradecerá con mucha energía y salud!",
+                "Bueno, amiguito, ahora sabes lo importante que es comer bien. En este juego, aprenderás a identificar qué alimentos " +
+                        "son saludables y cuáles debes comer con moderación. ¡Usa todo lo que aprendiste aquí para ganar y convertirte en un experto en alimentación saludable! ¡Nos vemos en el juego!"
+        };
+
+        // Cargar imágenes
+        background = new ImageIcon("resources/images/backgrounds/fondo_ladrillo_blanco_final.png").getImage();
+        doctor = new ImageIcon("resources/images/characters/personajemaestra.png").getImage();
+
+        // Hacer que este panel sea enfocable
+        setFocusable(true);
+        requestFocus();
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_SPACE) {
+                    if (currentMessage < messages.length - 1) {
+                        currentMessage++;
+                    } else {
+                        JOptionPane.showMessageDialog(null, "¡Fin del tutorial!");
+                        com.nutritiongame.GameController.getInstance().switchScreen(new MainMenu());
+                    }
+                    repaint(); // Redibujar después de cambiar el mensaje
+                }
+            }
+        });
     }
-    
-    private void initializeSteps() {
-        steps = new ArrayList<>();
-        
-        steps.add(new TutorialStep(
-            "Bienvenido al Juego de Nutrición",
-            "¡Aprende sobre alimentación saludable mientras te diviertes!",
-            "/resources/tutorial/intro.png"
-        ));
-        
-        steps.add(new TutorialStep(
-            "Las Cartas",
-            "Cada carta tiene valores nutricionales:\n- Proteínas\n- Vitaminas\n- Carbohidratos",
-            "/resources/tutorial/cards.png"
-        ));
-        
-        steps.add(new TutorialStep(
-            "Tipos de Cartas",
-            "Hay tres tipos de cartas:\n- Comida Chatarra (rojas)\n- Frutas (verdes)\n- Verduras (azules)",
-            "/resources/tutorial/card_types.png"
-        ));
-        
-        steps.add(new TutorialStep(
-            "¡Cuidado con el Diablito!",
-            "El diablito aparecerá para darte malos consejos. ¡No lo escuches!",
-            "/resources/tutorial/devil.png"
-        ));
-        
-        steps.add(new TutorialStep(
-            "Objetivos del Juego",
-            "Cada ronda tendrás un objetivo nutricional diferente.\nElige las cartas que mejor cumplan el objetivo.",
-            "/resources/tutorial/goals.png"
-        ));
-        
-        currentStep = 0;
-    }
-    
-    private void setupButtons() {
-        previousButton = new JButton("Anterior");
-        previousButton.setBounds(50, 500, 100, 30);
-        previousButton.addActionListener(e -> previousStep());
-        previousButton.setEnabled(false);
-        add(previousButton);
-        
-        nextButton = new JButton("Siguiente");
-        nextButton.setBounds(getWidth() - 150, 500, 100, 30);
-        nextButton.addActionListener(e -> nextStep());
-        add(nextButton);
-        
-        skipButton = new JButton("Saltar Tutorial");
-        skipButton.setBounds(getWidth() / 2 - 50, 500, 120, 30);
-        skipButton.addActionListener(e -> skipTutorial());
-        add(skipButton);
-    }
-    
-    private void previousStep() {
-        if (currentStep > 0) {
-            currentStep--;
-            updateButtons();
-            repaint();
-        }
-    }
-    
-    private void nextStep() {
-        if (currentStep < steps.size() - 1) {
-            currentStep++;
-            updateButtons();
-            repaint();
-        } else {
-            finishTutorial();
-        }
-    }
-    
-    private void updateButtons() {
-        previousButton.setEnabled(currentStep > 0);
-        nextButton.setText(currentStep == steps.size() - 1 ? "Finalizar" : "Siguiente");
-    }
-    
-    private void skipTutorial() {
-        int choice = JOptionPane.showConfirmDialog(this,
-            "¿Estás seguro de que quieres saltar el tutorial?",
-            "Confirmar",
-            JOptionPane.YES_NO_OPTION);
-            
-        if (choice == JOptionPane.YES_OPTION) {
-            finishTutorial();
-        }
-    }
-    
-    private void finishTutorial() {
-        GameController.getInstance().switchScreen(new MainMenu());
-    }
-    
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-        
-        TutorialStep currentTutorialStep = steps.get(currentStep);
-        
-        // Draw title
-        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+        g.drawImage(doctor, 50, 200, 150, 300, this);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 18));
         g.setColor(Color.BLACK);
-        drawCenteredString(g, currentTutorialStep.getTitle(), getWidth() / 2, 50);
-        
-        // Draw tutorial image
-        Image stepImage = GameController.getInstance().loadImage(currentTutorialStep.getImagePath());
-        g.drawImage(stepImage, getWidth() / 2 - 200, 100, 400, 300, this);
-        
-        // Draw description
-        g.setFont(new Font("Arial", Font.PLAIN, 16));
-        drawMultilineText(g, currentTutorialStep.getDescription(), 100, 420, getWidth() - 200);
-        
-        // Draw progress indicator
-        g.setFont(new Font("Arial", Font.PLAIN, 12));
-        String progress = String.format("Paso %d de %d", currentStep + 1, steps.size());
-        drawCenteredString(g, progress, getWidth() / 2, 470);
-    }
-    
-    private void drawCenteredString(Graphics g, String text, int x, int y) {
-        FontMetrics metrics = g.getFontMetrics();
-        x = x - metrics.stringWidth(text) / 2;
-        g.drawString(text, x, y);
-    }
-    
-    private void drawMultilineText(Graphics g, String text, int x, int y, int maxWidth) {
-        FontMetrics metrics = g.getFontMetrics();
-        String[] words = text.split(" ");
-        StringBuilder currentLine = new StringBuilder();
-        
-        for (String word : words) {
-            if (metrics.stringWidth(currentLine + " " + word) < maxWidth) {
-                if (currentLine.length() > 0) currentLine.append(" ");
-                currentLine.append(word);
-            } else {
-                g.drawString(currentLine.toString(), x, y);
-                y += metrics.getHeight();
-                currentLine = new StringBuilder(word);
-            }
+
+        // Dividir el mensaje en líneas si es muy largo
+        int x = 220, y = 150;
+        String[] lines = messages[currentMessage].split("(?<=\\G.{70})"); // Divide cada 70 caracteres
+        for (String line : lines) {
+            g.drawString(line, x, y);
+            y += 25;
         }
-        g.drawString(currentLine.toString(), x, y);
+
+        String instruction = (currentMessage < messages.length - 1)
+                ? "Presiona ESPACIO para continuar"
+                : "Presiona ESPACIO para salir";
+        g.drawString(instruction, x, 500);
     }
-    
+
     @Override
     public void render() {
         repaint();
     }
-    
+
     @Override
     public void update() {
     }
-    
+
     @Override
     public void handleInput() {
     }
