@@ -36,8 +36,8 @@ public class TutorialScreen extends JPanel implements Screen {
         };
 
         // Cargar imágenes
-        background = new ImageIcon("resources/images/backgrounds/fondo_ladrillo_blanco_final.png").getImage();
-        doctor = new ImageIcon("resources/images/characters/personajemaestra.png").getImage();
+        background = new ImageIcon("resources.images/backgrounds/fondo_ladrillo_blanco_final.png").getImage();
+        doctor = new ImageIcon("resources.images/characters/personajemaestra.png").getImage();
 
         // Hacer que este panel sea enfocable
         setFocusable(true);

@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainMenu extends JPanel implements Screen {
-    private final Image backgroundImage;
+    private Image backgroundImage;
 
     public MainMenu() {
         setLayout(null);
@@ -33,10 +33,8 @@ public class MainMenu extends JPanel implements Screen {
     }
 
     @Override
-    public void update() {
-    }
+    public void update() {}
 
     @Override
-    public void handleInput() {
-    }
+    public void handleInput() {}
 }
