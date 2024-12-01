@@ -23,16 +23,16 @@ public class CharacterSelection extends JPanel implements Screen {
     }
 
     private void loadCharacterImages() {
-        // Updated paths according to our file structure
+        // Using repository paths for character images
         String[] characters = {
-                "/images/characters/nina_WH_NL_LT.png",
-                "/images/characters/nina_WH_NL.png",
-                "/images/characters/nina_WH_SD_LT.png",
-                "/images/characters/nina_WH_SD.png",
-                "/images/characters/nino_WH_NL_LT1.png",
-                "/images/characters/nino_WH_NL.png",
-                "/images/characters/nino_WH_SD_1.png",
-                "/images/characters/nino_WH_SD_LT1.png"
+                "/resources/images/characters/nina_WH_NL_LT.png",  // Niña, sueter azul, con lentes
+                "/resources/images/characters/nina_WH_NL.png",     // Niña, sueter azul, sin lentes
+                "/resources/images/characters/nina_WH_SD_LT.png",  // Niña, sueter negro, con lentes
+                "/resources/images/characters/nina_WH_SD.png",     // Niña, sueter negro, sin lentes
+                "/resources/images/characters/nino_WH_NL_LT1.png", // Niño, sueter azul, con lentes
+                "/resources/images/characters/nino_WH_NL.png",     // Niño, sueter azul, sin lentes
+                "/resources/images/characters/nino_WH_SD_1.png",   // Niño, sueter negro, con lentes
+                "/resources/images/characters/nino_WH_SD_LT1.png"  // Niño, sueter negro, sin lentes
         };
 
         for (String character : characters) {
@@ -40,7 +40,7 @@ public class CharacterSelection extends JPanel implements Screen {
             characterImages.put(character, img);
         }
     }
-    
+
     private void createCharacterButtons() {
         for (Map.Entry<String, Image> entry : characterImages.entrySet()) {
             JButton characterButton = new JButton(new ImageIcon(entry.getValue()));
@@ -48,7 +48,7 @@ public class CharacterSelection extends JPanel implements Screen {
             add(characterButton);
         }
     }
-    
+
     private void selectCharacter(String character) {
         if (selectedCharacter1 == null) {
             selectedCharacter1 = character;
@@ -60,21 +60,20 @@ public class CharacterSelection extends JPanel implements Screen {
             startGame();
         }
     }
-    
+
     private void startGame() {
-        // Start the game with selected characters
         GameController.getInstance().switchScreen(new GameScreen(selectedCharacter1, selectedCharacter2));
     }
-    
+
     @Override
     public void render() {
         repaint();
     }
-    
+
     @Override
     public void update() {
     }
-    
+
     @Override
     public void handleInput() {
     }

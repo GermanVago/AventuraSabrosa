@@ -1,13 +1,13 @@
 package com.nutritiongame;
 
+import com.nutritiongame.screens.LoadingScreen;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.File;
-import java.net.URL;
-import com.nutritiongame.screens.LoadingScreen;
 
 public class GameController {
     private JFrame mainWindow;
@@ -33,23 +33,14 @@ public class GameController {
     public Image loadImage(String path) {
         if (!imageCache.containsKey(path)) {
             try {
-                // Try to load from resources
-                URL resourceUrl = getClass().getResource(path);
-                if (resourceUrl == null) {
-                    // If not found in resources, try as file path
-                    File file = new File("resources" + path);
-                    if (file.exists()) {
-                        ImageIcon icon = new ImageIcon(file.getAbsolutePath());
-                        imageCache.put(path, icon.getImage());
-                    } else {
-                        System.err.println("Cannot find image: " + path);
-                        // Return a placeholder image or null
-                        return createPlaceholderImage();
-                    }
-                } else {
-                    ImageIcon icon = new ImageIcon(resourceUrl);
-                    imageCache.put(path, icon.getImage());
+                // Simple file path from project root
+                File file = new File("src" + path);
+                if (!file.exists()) {
+                    System.err.println("Cannot find image: " + file.getAbsolutePath());
+                    return createPlaceholderImage();
                 }
+                ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+                imageCache.put(path, icon.getImage());
             } catch (Exception e) {
                 System.err.println("Error loading image: " + path);
                 e.printStackTrace();
@@ -60,7 +51,6 @@ public class GameController {
     }
 
     private Image createPlaceholderImage() {
-        // Create a simple colored rectangle as placeholder
         BufferedImage placeholder = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = placeholder.createGraphics();
         g2d.setColor(Color.GRAY);

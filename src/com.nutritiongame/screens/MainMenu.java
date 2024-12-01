@@ -13,7 +13,7 @@ public class MainMenu extends JPanel implements Screen {
     public MainMenu() {
         setLayout(null);
         // Updated path according to our file structure
-        backgroundImage = GameController.getInstance().loadImage("/Users/germy/Desktop/Aventura Sabrosa/src/resources/images/backgrounds/PANTALLA DE CARGA.png");
+        backgroundImage = GameController.getInstance().loadImage("resources/images/backgrounds/PANTALLA DE CARGA.png");
 
         buttons = new JButton[buttonLabels.length];
         for (int i = 0; i < buttonLabels.length; i++) {

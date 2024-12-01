@@ -11,8 +11,8 @@ public class LoadingScreen extends JPanel implements Screen {
 
     public LoadingScreen() {
         setLayout(null);
-        // Updated path according to our file structure
-        backgroundImage = GameController.getInstance().loadImage("Aventura Sabrosa/src/resources/images/backgrounds/PANTALLA DE CARGA.png");
+        // Path exactly as it appears in the repository
+        backgroundImage = GameController.getInstance().loadImage("/resources/images/backgrounds/PANTALLA DE CARGA.png");
 
         startButton = new JButton("Comenzar");
         startButton.setBounds(412, 500, 200, 50);
