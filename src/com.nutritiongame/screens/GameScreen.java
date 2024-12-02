@@ -9,6 +9,7 @@ import java.util.Queue;
 import com.nutritiongame.GameController;
 import com.nutritiongame.Screen;
 import com.nutritiongame.game.*;
+import com.nutritiongame.audio.SoundManager;
 
 public class GameScreen extends JPanel implements Screen {
     // Game state
@@ -84,6 +85,9 @@ public class GameScreen extends JPanel implements Screen {
         setupGameComponents();
         setupNotificationSystem();
         showInitialNotifications();
+
+        // Play game start sound
+        SoundManager.getInstance().playSound("game_start");
     }
 
     private void loadImages() {
@@ -132,6 +136,22 @@ public class GameScreen extends JPanel implements Screen {
         repaint();
     }
 
+    private void setupNotificationSystem() {
+        notificationPanel = new JPanel();
+        notificationPanel.setLayout(new BoxLayout(notificationPanel, BoxLayout.Y_AXIS));
+        notificationPanel.setOpaque(false);
+        centerPanel.add(notificationPanel);
+
+        notificationTimer = new javax.swing.Timer(3000, e -> {
+            if (!notificationQueue.isEmpty() &&
+                    System.currentTimeMillis() - notificationQueue.peek().timestamp > 3000) {
+                notificationQueue.poll();
+                updateNotificationPanel();
+            }
+        });
+        notificationTimer.start();
+    }
+
     private JPanel createInfoPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(0, 0, 0, 150));
@@ -153,20 +173,65 @@ public class GameScreen extends JPanel implements Screen {
         return panel;
     }
 
-    private void setupNotificationSystem() {
-        notificationPanel = new JPanel();
-        notificationPanel.setLayout(new BoxLayout(notificationPanel, BoxLayout.Y_AXIS));
-        notificationPanel.setOpaque(false);
-        centerPanel.add(notificationPanel);
+    private JPanel createHandPanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(0, 0, 0, 150));
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-        notificationTimer = new javax.swing.Timer(3000, e -> {
-            if (!notificationQueue.isEmpty() &&
-                    System.currentTimeMillis() - notificationQueue.peek().timestamp > 3000) {
-                notificationQueue.poll();
-                updateNotificationPanel();
-            }
+        List<Card> currentHand = isPlayer1Turn ? player1Hand : player2Hand;
+        for (int i = 0; i < currentHand.size(); i++) {
+            JButton cardButton = createCardButton(currentHand.get(i), i);
+            panel.add(cardButton);
+        }
+
+        return panel;
+    }
+
+    private void drawGameElements(Graphics g) {
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
+
+        // Draw characters
+        int characterWidth = 200;
+        int characterHeight = 300;
+        if (player1Image != null) {
+            g.drawImage(player1Image, 50, getHeight()/2 - characterHeight/2,
+                    characterWidth, characterHeight, this);
+        }
+        if (player2Image != null) {
+            g.drawImage(player2Image, getWidth() - characterWidth - 50,
+                    getHeight()/2 - characterHeight/2, characterWidth, characterHeight, this);
+        }
+
+        // Draw devil last so it appears on top
+        devil.render(g);
+    }
+
+    private JButton createCardButton(Card card, int index) {
+        JButton button = new JButton();
+        button.setPreferredSize(new Dimension(120, 180));
+
+        ImageIcon cardIcon = new ImageIcon(card.getImage());
+        Image scaledImage = cardIcon.getImage().getScaledInstance(120, 180, Image.SCALE_SMOOTH);
+        button.setIcon(new ImageIcon(scaledImage));
+
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+
+        button.addActionListener(e -> {
+            SoundManager.getInstance().playSound("card_play");
+            handleCardPlay(card, isPlayer1Turn, index);
         });
-        notificationTimer.start();
+
+        button.setToolTipText(String.format("%s\nProteínas: %d\nVitaminas: %d\nCarbohidratos: %d",
+                card.getName(),
+                card.getNutrientValue("proteins"),
+                card.getNutrientValue("vitamins"),
+                card.getNutrientValue("carbs")));
+
+        return button;
     }
 
     private void showNotification(String message, Color color) {
@@ -185,7 +250,6 @@ public class GameScreen extends JPanel implements Screen {
             label.setForeground(msg.color);
             label.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Add background for better visibility
             label.setOpaque(true);
             label.setBackground(new Color(0, 0, 0, 100));
             label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
@@ -195,86 +259,6 @@ public class GameScreen extends JPanel implements Screen {
         }
         notificationPanel.revalidate();
         notificationPanel.repaint();
-    }
-
-    private void showInitialNotifications() {
-        showNotification("¡Comienza el juego!", Color.YELLOW);
-        showNotification("Ronda 1: " + getCurrentChallengeText(), Color.CYAN);
-        showNotification("Turno del Jugador 1", Color.WHITE);
-    }
-
-    private void drawGameElements(Graphics g) {
-        if (backgroundImage != null) {
-            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-        }
-
-        // Characters
-        int characterWidth = 200;
-        int characterHeight = 300;
-        if (player1Image != null) {
-            g.drawImage(player1Image, 50, getHeight()/2 - characterHeight/2,
-                    characterWidth, characterHeight, this);
-        }
-        if (player2Image != null) {
-            g.drawImage(player2Image, getWidth() - characterWidth - 50,
-                    getHeight()/2 - characterHeight/2, characterWidth, characterHeight, this);
-        }
-
-        devil.render(g);
-    }
-
-    private JPanel createHandPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(new Color(0, 0, 0, 150));
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-
-        List<Card> currentHand = isPlayer1Turn ? player1Hand : player2Hand;
-        for (int i = 0; i < currentHand.size(); i++) {
-            JButton cardButton = createCardButton(currentHand.get(i), i);
-            panel.add(cardButton);
-        }
-
-        return panel;
-    }
-
-    private JButton createCardButton(Card card, int index) {
-        JButton button = new JButton();
-        button.setPreferredSize(new Dimension(120, 180));
-
-        ImageIcon cardIcon = new ImageIcon(card.getImage());
-        Image scaledImage = cardIcon.getImage().getScaledInstance(120, 180, Image.SCALE_SMOOTH);
-        button.setIcon(new ImageIcon(scaledImage));
-
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-
-        button.addActionListener(e -> handleCardPlay(card, isPlayer1Turn, index));
-
-        button.setToolTipText(String.format("%s\nProteínas: %d\nVitaminas: %d\nCarbohidratos: %d",
-                card.getName(),
-                card.getNutrientValue("proteins"),
-                card.getNutrientValue("vitamins"),
-                card.getNutrientValue("carbs")));
-
-        return button;
-    }
-
-    private void updateGameState() {
-        // Update labels
-        roundLabel.setText("Ronda " + currentRound);
-        player1ScoreLabel.setText("Jugador 1: " + scoreSystem.getPlayer1Score());
-        player2ScoreLabel.setText((isVsBot ? "Bot: " : "Jugador 2: ") + scoreSystem.getPlayer2Score());
-        turnLabel.setText("Turno: " + (isPlayer1Turn ? "Jugador 1" : (isVsBot ? "Bot" : "Jugador 2")));
-        challengeLabel.setText(getCurrentChallengeText());
-
-        // Update hand panel
-        mainPanel.remove(handPanel);
-        handPanel = createHandPanel();
-        mainPanel.add(handPanel, BorderLayout.SOUTH);
-
-        mainPanel.revalidate();
-        mainPanel.repaint();
     }
 
     private void handleCardPlay(Card card, boolean isPlayer1, int cardIndex) {
@@ -296,6 +280,9 @@ public class GameScreen extends JPanel implements Screen {
         isPlayer1Turn = !isPlayer1Turn;
         showNotification("Turno de " + (isPlayer1Turn ? "Jugador 1" : (isVsBot ? "Bot" : "Jugador 2")),
                 Color.YELLOW);
+
+        // Try to make the devil appear with current game context
+        devil.tryAppear(currentNutrientChallenge, isPlayer1Turn ? player1Hand : player2Hand);
 
         updateGameState();
 
@@ -321,6 +308,21 @@ public class GameScreen extends JPanel implements Screen {
         return hand.stream()
                 .max((c1, c2) -> calculateScore(c1) - calculateScore(c2))
                 .orElse(hand.get(0));
+    }
+
+    private void updateGameState() {
+        roundLabel.setText("Ronda " + currentRound);
+        player1ScoreLabel.setText("Jugador 1: " + scoreSystem.getPlayer1Score());
+        player2ScoreLabel.setText((isVsBot ? "Bot: " : "Jugador 2: ") + scoreSystem.getPlayer2Score());
+        turnLabel.setText("Turno: " + (isPlayer1Turn ? "Jugador 1" : (isVsBot ? "Bot" : "Jugador 2")));
+        challengeLabel.setText(getCurrentChallengeText());
+
+        mainPanel.remove(handPanel);
+        handPanel = createHandPanel();
+        mainPanel.add(handPanel, BorderLayout.SOUTH);
+
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
     private int calculateScore(Card card) {
@@ -349,7 +351,15 @@ public class GameScreen extends JPanel implements Screen {
         }
     }
 
+    private void showInitialNotifications() {
+        showNotification("¡Comienza el juego!", Color.YELLOW);
+        showNotification("Ronda 1: " + getCurrentChallengeText(), Color.CYAN);
+        showNotification("Turno del Jugador 1", Color.WHITE);
+    }
+
     private void endRound() {
+        SoundManager.getInstance().playSound("round_end");
+
         currentRound++;
         if (currentRound > 3) {
             endGame();
@@ -358,11 +368,17 @@ public class GameScreen extends JPanel implements Screen {
             currentNutrientChallenge = challenges[currentRound - 1];
             showNotification("¡Ronda " + currentRound + "!", Color.CYAN);
             showNotification(getCurrentChallengeText(), Color.CYAN);
+
+            SoundManager.getInstance().playSound("round_start");
             updateGameState();
         }
     }
 
     private void endGame() {
+        cleanup();
+
+        SoundManager.getInstance().playSound("victory");
+
         boolean player1Wins = scoreSystem.getPlayer1Score() > scoreSystem.getPlayer2Score();
         String message = String.format(
                 "¡Juego terminado!\n\n" +
@@ -379,6 +395,12 @@ public class GameScreen extends JPanel implements Screen {
         GameController.getInstance().switchScreen(new MainMenu());
     }
 
+    private void cleanup() {
+        if (notificationTimer != null && notificationTimer.isRunning()) {
+            notificationTimer.stop();
+        }
+        devil.cleanup();
+    }
     @Override
     public void render() {
         repaint();
@@ -386,9 +408,19 @@ public class GameScreen extends JPanel implements Screen {
 
     @Override
     public void update() {
+        // Update animation states if needed
+        if (notificationPanel != null) {
+            updateNotificationPanel();
+        }
     }
 
     @Override
     public void handleInput() {
+        // Handle any additional input if needed
+    }
+
+    // Helper method for debugging if needed
+    private void debug(String message) {
+        System.out.println("[GameScreen] " + message);
     }
 }
