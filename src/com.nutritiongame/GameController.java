@@ -1,7 +1,11 @@
 package com.nutritiongame;
 
+import com.nutritiongame.screens.LoadingScreen;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +13,7 @@ public class GameController {
     private JFrame mainWindow;
     private Screen currentScreen;
     private static GameController instance;
-    private final Map<String, Image> imageCache;
+    private Map<String, Image> imageCache;
 
     private GameController() {
         mainWindow = new JFrame("Juego de Nutrición");
@@ -26,25 +30,51 @@ public class GameController {
         return instance;
     }
 
+    public Image loadImage(String path) {
+        if (!imageCache.containsKey(path)) {
+            try {
+                // Fix path by ensuring proper separator between src and resources
+                String fullPath = "src" + (path.startsWith("/") ? "" : "/") + path;
+                File file = new File(fullPath);
+
+                if (!file.exists()) {
+                    System.err.println("Cannot find image: " + file.getAbsolutePath());
+                    return createPlaceholderImage();
+                }
+
+                System.out.println("Loading image from: " + file.getAbsolutePath());
+                ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+                imageCache.put(path, icon.getImage());
+            } catch (Exception e) {
+                System.err.println("Error loading image: " + path);
+                e.printStackTrace();
+                return createPlaceholderImage();
+            }
+        }
+        return imageCache.get(path);
+    }
+
+    private Image createPlaceholderImage() {
+        BufferedImage placeholder = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = placeholder.createGraphics();
+        g2d.setColor(Color.GRAY);
+        g2d.fillRect(0, 0, 100, 100);
+        g2d.dispose();
+        return placeholder;
+    }
+
     public void switchScreen(Screen screen) {
         currentScreen = screen;
         mainWindow.getContentPane().removeAll();
         if (screen instanceof JPanel) {
-            mainWindow.add((JPanel) screen);
+            mainWindow.add((JPanel)screen);
         }
         mainWindow.revalidate();
         mainWindow.repaint();
     }
 
-    public Image loadImage(String path) {
-        if (!imageCache.containsKey(path)) {
-            imageCache.put(path, new ImageIcon(path).getImage());
-        }
-        return imageCache.get(path);
-    }
-
     public void start() {
         mainWindow.setVisible(true);
-        switchScreen(new com.nutritiongame.screens.LoadingScreen());
+        switchScreen(new LoadingScreen());
     }
 }
