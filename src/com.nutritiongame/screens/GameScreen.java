@@ -69,7 +69,9 @@ public class GameScreen extends JPanel implements Screen {
         this.isPlayer1Turn = true;
         this.currentNutrientChallenge = "proteinas";
 
+        // After initializing the deck
         this.deck = new CardDeck();
+        this.deck.prepareForChallenge("proteinas"); // Prepare initial deck for first round
         this.player1Hand = new ArrayList<>();
         this.player2Hand = new ArrayList<>();
         this.scoreSystem = new ScoreSystem();
@@ -231,11 +233,15 @@ public class GameScreen extends JPanel implements Screen {
             handleCardPlay(card, isPlayer1Turn, index);
         });
 
-        button.setToolTipText(String.format("%s\nProteínas: %d\nVitaminas: %d\nCarbohidratos: %d",
+        // Updated tooltip to include health score and description
+        button.setToolTipText(String.format("<html>%s<br>Proteínas: %d<br>Vitaminas: %d<br>Carbohidratos: %d<br>Salud: %d%%<br><i>%s</i></html>",
                 card.getName(),
                 card.getNutrientValue("proteins"),
                 card.getNutrientValue("vitamins"),
-                card.getNutrientValue("carbs")));
+                card.getNutrientValue("carbs"),
+                card.getHealthScore(),
+                card.getDescription()
+        ));
 
         return button;
     }
@@ -268,40 +274,61 @@ public class GameScreen extends JPanel implements Screen {
     }
 
     private void handleCardPlay(Card card, boolean isPlayer1, int cardIndex) {
-        // Calculate and add score
-        int score = calculateScore(card);
-        scoreSystem.addScore(isPlayer1, score);
+        // Calculate base score
+        int baseScore = calculateScore(card);
 
-        // Update character images based on new scores
-        updateCharacterImages();
+        // Add score with the played card
+        scoreSystem.addScore(isPlayer1, baseScore, card);
 
+        // Show who played the card
         String playerName = isPlayer1 ? "Jugador 1" : (isVsBot ? "Señor Grasoso" : "Jugador 2");
         showNotification(playerName + " jugó " + card.getName(), Color.WHITE);
-        showNotification("¡+" + score + " puntos!",
-                score > 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
 
+        // Show points notification
+        showNotification("¡+" + baseScore + " puntos!",
+                baseScore > 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+
+        // Show bonus notification if applicable
+        String bonusMessage = scoreSystem.getBonusMessage(card);
+        if (bonusMessage != null) {
+            showNotification(bonusMessage, new Color(255, 215, 0)); // Gold color
+        }
+
+        // Update hands
         List<Card> hand = isPlayer1 ? player1Hand : player2Hand;
         hand.remove(cardIndex);
         Card newCard = deck.drawCard();
         if (newCard != null) {
             hand.add(newCard);
+        } else {
+            // If deck is empty, prepare new deck with current challenge
+            deck.prepareForChallenge(currentNutrientChallenge);
+            newCard = deck.drawCard();
+            if (newCard != null) {
+                hand.add(newCard);
+            }
         }
 
+        // Switch turns
         isPlayer1Turn = !isPlayer1Turn;
-        showNotification("Turno de " + (isPlayer1Turn ? "Jugador 1" : (isVsBot ? "Bot" : "Jugador 2")),
+        showNotification("Turno de " + (isPlayer1Turn ? "Jugador 1" : (isVsBot ? "Señor Grasoso" : "Jugador 2")),
                 Color.YELLOW);
 
-        // Try to make the devil appear with current game context
+        // Try to make devil appear
         devil.tryAppear(currentNutrientChallenge, isPlayer1Turn ? player1Hand : player2Hand);
 
+        // Update character images and game state
+        updateCharacterImages();
         updateGameState();
 
+        // Handle bot turn if applicable
         if (isVsBot && !isPlayer1Turn) {
             javax.swing.Timer botTimer = new javax.swing.Timer(1000, e -> makeBotPlay());
             botTimer.setRepeats(false);
             botTimer.start();
         }
 
+        // Check for round end
         if (scoreSystem.getRoundCount() >= 6) {
             endRound();
         }
@@ -376,10 +403,13 @@ public class GameScreen extends JPanel implements Screen {
         } else {
             String[] challenges = {"proteinas", "vitaminas", "carbohidratos"};
             currentNutrientChallenge = challenges[currentRound - 1];
+            // Prepare deck for new challenge
+            deck.prepareForChallenge(currentNutrientChallenge);
+
             showNotification("¡Ronda " + currentRound + "!", Color.CYAN);
             showNotification(getCurrentChallengeText(), Color.CYAN);
 
-            SoundManager.getInstance().playSound("round_start");
+            scoreSystem.resetRoundCount();
             updateGameState();
         }
     }
@@ -474,5 +504,12 @@ public class GameScreen extends JPanel implements Screen {
 
         // Trigger repaint to show new images
         repaint();
+    }
+
+    private Color getHealthScoreColor(Card card) {
+        int score = card.getHealthScore();
+        if (score >= 80) return new Color(0, 255, 0, 100); // Green for healthy
+        if (score >= 50) return new Color(255, 255, 0, 100); // Yellow for moderate
+        return new Color(255, 0, 0, 100); // Red for unhealthy
     }
 }
