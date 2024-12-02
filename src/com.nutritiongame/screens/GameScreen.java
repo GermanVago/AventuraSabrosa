@@ -70,7 +70,7 @@ public class GameScreen extends JPanel implements Screen {
         this.currentNutrientChallenge = "proteinas";
 
         // After initializing the deck
-        this.deck = new CardDeck();
+        this.deck = new CardDeck(isVsBot);
         this.deck.prepareForChallenge("proteinas"); // Prepare initial deck for first round
         this.player1Hand = new ArrayList<>();
         this.player2Hand = new ArrayList<>();

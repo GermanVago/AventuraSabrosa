@@ -1,3 +1,4 @@
+
 package com.nutritiongame.game;
 
 import java.util.ArrayList;
@@ -6,17 +7,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CardDeck {
-    private List<Card> allCards;    // All available cards
-    private List<Card> currentDeck; // Current game deck
+    private List<Card> allCards;
+    private List<Card> currentDeck;
+    private boolean isBotMode;
 
-    public CardDeck() {
+    public CardDeck(boolean isBotMode) {
+        this.isBotMode = isBotMode;
         allCards = new ArrayList<>();
         currentDeck = new ArrayList<>();
         initializeDeck();
     }
 
     private void initializeDeck() {
-        // Protein-rich foods (new category)
+        initializeProteinCards();
+        initializeFruitCards();
+        initializeVegetableCards();
+        initializeFoodtrashCards();
+    }
+
+    private void initializeProteinCards() {
         allCards.add(new Card("Pollo", "/resources/images/cards/Cartas Proteinas/Carta_pollo.png",
                 Card.CardType.PROTEIN, 25, 5, 0, 85,
                 "El pollo es una excelente fuente de proteína magra."));
@@ -26,25 +35,9 @@ public class CardDeck {
         allCards.add(new Card("Frijoles", "/resources/images/cards/Cartas Proteinas/Carta_frijol.png",
                 Card.CardType.PROTEIN, 15, 7, 20, 85,
                 "Los frijoles tienen proteína vegetal y fibra para tu salud."));
+    }
 
-        // Foodtrash Cards
-        allCards.add(new Card("Chocolate", "/resources/images/cards/Cartas Foodtrash/Comida_chocolate.png",
-                Card.CardType.FOODTRASH, 1, 0, 20, 20,
-                "El chocolate tiene mucha azúcar."));
-        allCards.add(new Card("Hamburguesa", "/resources/images/cards/Cartas Foodtrash/Foodtrash_Hamburguesa.png",
-                Card.CardType.FOODTRASH, 5, 1, 15, 30,
-                "La hamburguesa tiene muchas grasas."));
-        allCards.add(new Card("Hot Dog", "/resources/images/cards/Cartas Foodtrash/Foodtrash_HotDog.png",
-                Card.CardType.FOODTRASH, 4, 0, 18, 25,
-                "El hot dog tiene muchos conservadores."));
-        allCards.add(new Card("Pizza", "/resources/images/cards/Cartas Foodtrash/Foodtrash_Pizza.png",
-                Card.CardType.FOODTRASH, 6, 2, 25, 35,
-                "La pizza tiene muchas calorías."));
-        allCards.add(new Card("Soda", "/resources/images/cards/Cartas Foodtrash/Foodtrash_Soda.png",
-                Card.CardType.FOODTRASH, 0, 0, 30, 10,
-                "La soda tiene mucha azúcar y nada de nutrientes."));
-
-        // Fruit Cards with adjusted values
+    private void initializeFruitCards() {
         allCards.add(new Card("Sandía", "/resources/images/cards/Cartas Frutas/Carta_fruta_Sandia.png",
                 Card.CardType.FRUIT, 2, 8, 10, 75,
                 "La sandía te mantiene hidratado."));
@@ -63,8 +56,9 @@ public class CardDeck {
         allCards.add(new Card("Fresa", "/resources/images/cards/Cartas Frutas/fruta_fresa.png",
                 Card.CardType.FRUIT, 1, 9, 5, 85,
                 "Las fresas tienen antioxidantes."));
+    }
 
-        // Vegetable Cards with adjusted values
+    private void initializeVegetableCards() {
         allCards.add(new Card("Cebolla", "/resources/images/cards/Cartas Verduras/Carta_Cebolla.png",
                 Card.CardType.VEGETABLE, 1, 7, 5, 80,
                 "La cebolla ayuda a tu sistema inmune."));
@@ -85,28 +79,66 @@ public class CardDeck {
                 "El brócoli es un supervegetal nutritivo."));
     }
 
+    private void initializeFoodtrashCards() {
+        allCards.add(new Card("Chocolate", "/resources/images/cards/Cartas Foodtrash/Comida_chocolate.png",
+                Card.CardType.FOODTRASH, 1, 0, 20, 20,
+                "El chocolate tiene mucha azúcar."));
+        allCards.add(new Card("Hamburguesa", "/resources/images/cards/Cartas Foodtrash/Foodtrash_Hamburguesa.png",
+                Card.CardType.FOODTRASH, 5, 1, 15, 30,
+                "La hamburguesa tiene muchas grasas."));
+        allCards.add(new Card("Hot Dog", "/resources/images/cards/Cartas Foodtrash/Foodtrash_HotDog.png",
+                Card.CardType.FOODTRASH, 4, 0, 18, 25,
+                "El hot dog tiene muchos conservadores."));
+        allCards.add(new Card("Pizza", "/resources/images/cards/Cartas Foodtrash/Foodtrash_Pizza.png",
+                Card.CardType.FOODTRASH, 6, 2, 25, 35,
+                "La pizza tiene muchas calorías."));
+        allCards.add(new Card("Soda", "/resources/images/cards/Cartas Foodtrash/Foodtrash_Soda.png",
+                Card.CardType.FOODTRASH, 0, 0, 30, 10,
+                "La soda tiene mucha azúcar y nada de nutrientes."));
+    }
+
+    private List<Card> getCardsForChallenge(String challengeType, boolean isGoodCard) {
+        return allCards.stream()
+                .filter(card -> isGoodForChallenge(card, challengeType) == isGoodCard)
+                .collect(Collectors.toList());
+    }
+
+    private void addCardsToCurrentDeck(List<Card> cardList, int count) {
+        Collections.shuffle(cardList);
+        currentDeck.addAll(cardList.subList(0, Math.min(count, cardList.size())));
+    }
+
+    private void prepareBotDeck(String challengeType) {
+        List<Card> junkFood = getCardsForChallenge(challengeType, false);
+        List<Card> otherCards = getCardsForChallenge(challengeType, true);
+
+        addCardsToCurrentDeck(junkFood, 6);
+        addCardsToCurrentDeck(otherCards, 4);
+    }
+
+    private void preparePlayerDeck(String challengeType) {
+        List<Card> challengeCards = getCardsForChallenge(challengeType, true);
+        List<Card> otherCards = getCardsForChallenge(challengeType, false);
+
+        if (challengeType.equals("proteinas")) {
+            List<Card> proteinCards = allCards.stream()
+                    .filter(card -> card.getType() == Card.CardType.PROTEIN)
+                    .collect(Collectors.toList());
+            addCardsToCurrentDeck(proteinCards, 2);
+        }
+
+        addCardsToCurrentDeck(challengeCards, 6);
+        addCardsToCurrentDeck(otherCards, 10 - currentDeck.size());
+    }
+
     public void prepareForChallenge(String challengeType) {
         currentDeck = new ArrayList<>();
 
-        // Get appropriate cards for the challenge
-        List<Card> matchingCards = allCards.stream()
-                .filter(card -> isGoodForChallenge(card, challengeType))
-                .collect(Collectors.toList());
-
-        // Get some other cards for variety
-        List<Card> otherCards = allCards.stream()
-                .filter(card -> !isGoodForChallenge(card, challengeType))
-                .collect(Collectors.toList());
-
-        // Ensure a good mix (60% good cards, 40% others)
-        int matchingCount = Math.min(matchingCards.size(), 6);
-        int otherCount = Math.min(otherCards.size(), 4);
-
-        Collections.shuffle(matchingCards);
-        Collections.shuffle(otherCards);
-
-        currentDeck.addAll(matchingCards.subList(0, matchingCount));
-        currentDeck.addAll(otherCards.subList(0, otherCount));
+        if (isBotMode) {
+            prepareBotDeck(challengeType);
+        } else {
+            preparePlayerDeck(challengeType);
+        }
 
         shuffle();
     }
@@ -114,11 +146,12 @@ public class CardDeck {
     private boolean isGoodForChallenge(Card card, String challengeType) {
         switch (challengeType) {
             case "proteinas":
-                return card.getNutrientValue("proteins") >= 10 && card.getHealthScore() >= 70;
+                return !isBotMode && card.getType() == Card.CardType.PROTEIN
+                        || card.getNutrientValue("proteins") >= 10;
             case "vitaminas":
-                return card.getNutrientValue("vitamins") >= 15 && card.getHealthScore() >= 70;
+                return card.getNutrientValue("vitamins") >= 15;
             case "carbohidratos":
-                return card.getNutrientValue("carbs") <= 15 && card.getHealthScore() >= 70;
+                return card.getNutrientValue("carbs") <= 15;
             default:
                 return false;
         }
@@ -130,9 +163,9 @@ public class CardDeck {
 
     public Card drawCard() {
         if (currentDeck.isEmpty()) {
-            prepareForChallenge("proteinas"); // Default challenge
+            return null;
         }
-        return !currentDeck.isEmpty() ? currentDeck.remove(0) : null;
+        return currentDeck.remove(0);
     }
 
     public List<Card> drawCards(int count) {
