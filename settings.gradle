@@ -1,0 +1,3 @@
+rootProject.name = 'AventuraSabrosa'
+include 'core'
+include 'desktop'
