@@ -28,7 +28,7 @@ public class TutorialScreen extends JPanel implements Screen {
     }
 
     private void loadImages() {
-        backgroundImage = GameController.getInstance().loadImage("/resources/images/backgrounds/fondo_ladrillo_blanco_final.png");
+        backgroundImage = GameController.getInstance().loadImage("/resources/images/backgrounds/Salon.png");
     }
 
     private void initializeTutorialSteps() {
@@ -38,7 +38,7 @@ public class TutorialScreen extends JPanel implements Screen {
         tutorialSteps.add(new TutorialStep(
                 "¡Bienvenido al Juego de Nutrición!",
                 "Aprende sobre alimentación saludable mientras juegas y te diviertes.",
-                "/resources/images/tutorial/tutorial_welcome.png"
+                "/resources/images/characters/cimarron.png"
         ));
 
         // Step 2: Card Types
@@ -48,7 +48,7 @@ public class TutorialScreen extends JPanel implements Screen {
                         "- Cartas de Frutas (verdes)\n" +
                         "- Cartas de Verduras (azules)\n" +
                         "- Cartas de Comida Chatarra (rojas)",
-                "/resources/images/tutorial/tutorial_cards.png"
+                "/resources/images/characters/cimarron.png"
         ));
 
         // Step 3: Nutrient Values
@@ -58,7 +58,7 @@ public class TutorialScreen extends JPanel implements Screen {
                         "- Proteínas\n" +
                         "- Vitaminas\n" +
                         "- Carbohidratos",
-                "/resources/images/tutorial/tutorial_nutrients.png"
+                "/resources/images/characters/cimarron.png"
         ));
 
         // Step 4: Gameplay
@@ -66,7 +66,7 @@ public class TutorialScreen extends JPanel implements Screen {
                 "Cómo Jugar",
                 "En cada ronda tendrás un objetivo nutricional diferente.\n" +
                         "Elige las cartas que mejor cumplan el objetivo para ganar puntos.",
-                "/resources/images/tutorial/tutorial_gameplay.png"
+                "/resources/images/characters/cimarron.png"
         ));
 
         // Step 5: Devil Character
@@ -74,7 +74,7 @@ public class TutorialScreen extends JPanel implements Screen {
                 "¡Cuidado con el Diablito!",
                 "El diablito aparecerá para darte malos consejos.\n" +
                         "¡No lo escuches si quieres ganar!",
-                "/resources/images/tutorial/tutorial_devil.png"
+                "/resources/images/characters/Diablo.png"
         ));
 
         // Step 6: Scoring
@@ -82,7 +82,7 @@ public class TutorialScreen extends JPanel implements Screen {
                 "Sistema de Puntuación",
                 "Ganarás puntos según qué tan bien cumplas el objetivo de la ronda.\n" +
                         "El jugador con más puntos al final del juego gana.",
-                "/resources/images/tutorial/tutorial_scoring.png"
+                "/resources/images/characters/cimarron.png"
         ));
     }
 
