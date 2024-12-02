@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import com.nutritiongame.GameController;
 import com.nutritiongame.Screen;
+import com.nutritiongame.audio.SoundManager;
 
 public class MainMenu extends JPanel implements Screen {
     private Image backgroundImage;
@@ -14,10 +15,16 @@ public class MainMenu extends JPanel implements Screen {
         setLayout(new BorderLayout());
         loadImages();
         setupButtons();
+        // Start background music when entering main menu
+        SoundManager.getInstance().startBackgroundMusic();
     }
 
     private void loadImages() {
-        backgroundImage = GameController.getInstance().loadImage("/resources/images/backgrounds/fondo_ladrillo_blanco_final.png");
+        try {
+            backgroundImage = GameController.getInstance().loadImage("/resources/images/backgrounds/fondo_ladrillo_blanco_final.png");
+        } catch (Exception e) {
+            System.err.println("Error loading background image: " + e.getMessage());
+        }
     }
 
     private void setupButtons() {
@@ -26,12 +33,23 @@ public class MainMenu extends JPanel implements Screen {
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setOpaque(false);
 
+        // Add title
+        JLabel titleLabel = new JLabel("Aventura Sabrosa", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 36));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        buttonPanel.add(titleLabel);
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 50)));
+
         buttons = new JButton[buttonLabels.length];
 
         for (int i = 0; i < buttonLabels.length; i++) {
             buttons[i] = createStyledButton(buttonLabels[i]);
             final int index = i;
-            buttons[i].addActionListener(e -> handleButtonClick(index));
+            buttons[i].addActionListener(e -> {
+                SoundManager.getInstance().playSound("button_click");
+                handleButtonClick(index);
+            });
 
             // Center the button and add spacing
             JPanel buttonWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -85,9 +103,7 @@ public class MainMenu extends JPanel implements Screen {
                 showGameModeSelection();
                 break;
             case 1: // OPCIONES
-                // Will be implemented later
-                JOptionPane.showMessageDialog(this, "Opciones próximamente",
-                        "En Desarrollo", JOptionPane.INFORMATION_MESSAGE);
+                GameController.getInstance().switchScreen(new OptionsScreen());
                 break;
             case 2: // TUTORIAL
                 GameController.getInstance().switchScreen(new TutorialScreen());
@@ -101,17 +117,19 @@ public class MainMenu extends JPanel implements Screen {
 
         JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 0, 10));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        buttonPanel.setOpaque(false);
+        buttonPanel.setBackground(new Color(51, 51, 51));
 
         JButton pvpButton = createStyledButton("1 VS 1");
         JButton botButton = createStyledButton("1 VS BOT");
 
         pvpButton.addActionListener(e -> {
+            SoundManager.getInstance().playSound("button_click");
             modeDialog.dispose();
             GameController.getInstance().switchScreen(new CharacterSelection(true));
         });
 
         botButton.addActionListener(e -> {
+            SoundManager.getInstance().playSound("button_click");
             modeDialog.dispose();
             GameController.getInstance().switchScreen(new CharacterSelection(false));
         });
@@ -123,6 +141,11 @@ public class MainMenu extends JPanel implements Screen {
         modeDialog.pack();
         modeDialog.setLocationRelativeTo(this);
         modeDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        // Style the dialog
+        modeDialog.getRootPane().setBackground(new Color(51, 51, 51));
+        ((JPanel)modeDialog.getContentPane()).setBackground(new Color(51, 51, 51));
+
         modeDialog.setVisible(true);
     }
 
@@ -132,7 +155,7 @@ public class MainMenu extends JPanel implements Screen {
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 
-            // Add semi-transparent overlay
+            // Add semi-transparent overlay for better text readability
             g.setColor(new Color(0, 0, 0, 100));
             g.fillRect(0, 0, getWidth(), getHeight());
         }
