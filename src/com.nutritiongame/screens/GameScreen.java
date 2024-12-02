@@ -2,6 +2,7 @@ package com.nutritiongame.screens;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,9 +60,11 @@ public class GameScreen extends JPanel implements Screen {
 
     public GameScreen(String player1Character, String player2Character) {
         this.player1Character = player1Character;
-        this.player2Character = player2Character != null ? player2Character : "/resources/images/characters/nino_WH_SD_1.png";
+        this.player2Character = player2Character != null ? player2Character :
+                "/resources/images/characters/senor_grasoso.png";
         this.isVsBot = (player2Character == null);
 
+        // Initialize game components
         this.currentRound = 1;
         this.isPlayer1Turn = true;
         this.currentNutrientChallenge = "proteinas";
@@ -72,6 +75,9 @@ public class GameScreen extends JPanel implements Screen {
         this.scoreSystem = new ScoreSystem();
         this.devil = new DevilCharacter();
         this.notificationQueue = new LinkedList<>();
+
+        // Initial character images
+        updateCharacterImages();
 
         setPreferredSize(new Dimension(1024, 768));
         setLayout(new BorderLayout());
@@ -262,10 +268,14 @@ public class GameScreen extends JPanel implements Screen {
     }
 
     private void handleCardPlay(Card card, boolean isPlayer1, int cardIndex) {
+        // Calculate and add score
         int score = calculateScore(card);
         scoreSystem.addScore(isPlayer1, score);
 
-        String playerName = isPlayer1 ? "Jugador 1" : (isVsBot ? "Bot" : "Jugador 2");
+        // Update character images based on new scores
+        updateCharacterImages();
+
+        String playerName = isPlayer1 ? "Jugador 1" : (isVsBot ? "Señor Grasoso" : "Jugador 2");
         showNotification(playerName + " jugó " + card.getName(), Color.WHITE);
         showNotification("¡+" + score + " puntos!",
                 score > 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
@@ -422,5 +432,47 @@ public class GameScreen extends JPanel implements Screen {
     // Helper method for debugging if needed
     private void debug(String message) {
         System.out.println("[GameScreen] " + message);
+    }
+    private Image getCharacterImageForScore(String baseCharacterPath, int score, boolean isBot) {
+        if (isBot) {
+            return GameController.getInstance().loadImage("/resources/images/characters/senor_grasoso.png");
+        }
+
+        // Get base directory name
+        String characterType = baseCharacterPath.contains("nina_") ? "Nina" : "Nino";
+        String baseName = new File(baseCharacterPath).getName();
+
+        // Determine state based on score
+        if (score >= 200) {
+            // Strong state 2
+            return GameController.getInstance().loadImage(
+                    "/resources/images/characters/strong_2/" + characterType + "/" + baseName);
+        } else if (score >= 100) {
+            // Strong state 1
+            return GameController.getInstance().loadImage(
+                    "/resources/images/characters/strong_1/" + characterType + "/" + baseName);
+        } else {
+            // Base state
+            return GameController.getInstance().loadImage(baseCharacterPath);
+        }
+    }
+
+    private void updateCharacterImages() {
+        // Update player 1 image
+        player1Image = getCharacterImageForScore(
+                player1Character,
+                scoreSystem.getPlayer1Score(),
+                false
+        );
+
+        // Update player 2 image
+        player2Image = getCharacterImageForScore(
+                player2Character,
+                scoreSystem.getPlayer2Score(),
+                isVsBot
+        );
+
+        // Trigger repaint to show new images
+        repaint();
     }
 }
