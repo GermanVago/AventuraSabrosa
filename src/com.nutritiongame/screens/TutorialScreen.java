@@ -44,10 +44,11 @@ public class TutorialScreen extends JPanel implements Screen {
         // Step 2: Card Types
         tutorialSteps.add(new TutorialStep(
                 "Tipos de Cartas",
-                "Hay tres tipos de cartas:\n" +
-                        "- Cartas de Frutas (verdes)\n" +
-                        "- Cartas de Verduras (azules)\n" +
-                        "- Cartas de Comida Chatarra (rojas)",
+                "Hay cuatro tipos de cartas:\n" +
+                        "- Cartas de Frutas\n" +
+                        "- Cartas de Proteinas\n" +
+                        "- Cartas de Verduras \n" +
+                        "- Cartas de Comida Chatarra",
                 "/resources/images/characters/cimarron.png"
         ));
 
