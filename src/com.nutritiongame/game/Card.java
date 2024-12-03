@@ -2,16 +2,14 @@ package com.nutritiongame.game;
 
 import com.nutritiongame.GameController;
 import java.awt.Image;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Card {
     private String name;
     private Image image;
-    private Map<String, Integer> nutrients;
+    private Nutrients nutrients;
     private CardType type;
     private String description;
-    private int healthScore; // 0-100 indicating how healthy the food is
+    private int healthScore;
 
     public enum CardType {
         FOODTRASH,   // Unhealthy foods
@@ -26,15 +24,11 @@ public class Card {
         this.type = type;
         this.healthScore = healthScore;
         this.description = description;
-
-        nutrients = new HashMap<>();
-        nutrients.put("proteins", proteins);
-        nutrients.put("vitamins", vitamins);
-        nutrients.put("carbs", carbs);
+        this.nutrients = new Nutrients(proteins, vitamins, carbs);
     }
 
     public int getNutrientValue(String nutrient) {
-        return nutrients.getOrDefault(nutrient, 0);
+        return nutrients.getValue(nutrient);
     }
 
     public Image getImage() {
@@ -55,5 +49,9 @@ public class Card {
 
     public String getDescription() {
         return description;
+    }
+
+    public Nutrients getNutrients() {
+        return nutrients;
     }
 }
