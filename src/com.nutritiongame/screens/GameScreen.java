@@ -173,7 +173,7 @@ public class GameScreen extends JPanel implements Screen {
 
         Component[] labels = {roundLabel, player1ScoreLabel, player2ScoreLabel, turnLabel, challengeLabel};
         for (Component label : labels) {
-            ((JLabel)label).setFont(new Font("Arial", Font.BOLD, 14));
+            ((JLabel)label).setFont(new Font("Arial", Font.BOLD, 23));
             ((JLabel)label).setForeground(Color.WHITE);
             panel.add(label);
         }
@@ -200,16 +200,25 @@ public class GameScreen extends JPanel implements Screen {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
 
-        // Draw characters
-        int characterWidth = 200;
-        int characterHeight = 300;
+        // Fixed dimensions that were working before
+        int characterWidth = 350;  // Base width
+        int characterHeight = 400; // Base height
+
+        // Calculate positions
+        int player1X = 50;
+        int player2X = getWidth() - characterWidth - 50;
+        int characterY = getHeight()/2 - characterHeight/2;
+
+        // Draw player 1
         if (player1Image != null) {
-            g.drawImage(player1Image, 50, getHeight()/2 - characterHeight/2,
+            g.drawImage(player1Image, player1X, characterY,
                     characterWidth, characterHeight, this);
         }
+
+        // Draw player 2 (or bot)
         if (player2Image != null) {
-            g.drawImage(player2Image, getWidth() - characterWidth - 50,
-                    getHeight()/2 - characterHeight/2, characterWidth, characterHeight, this);
+            g.drawImage(player2Image, player2X, characterY,
+                    characterWidth, characterHeight, this);
         }
 
         // Draw devil last so it appears on top
@@ -468,23 +477,22 @@ public class GameScreen extends JPanel implements Screen {
             return GameController.getInstance().loadImage("/resources/images/characters/senor_grasoso.png");
         }
 
-        // Get base directory name
         String characterType = baseCharacterPath.contains("nina_") ? "Nina" : "Nino";
         String baseName = new File(baseCharacterPath).getName();
 
-        // Determine state based on score
+        String imagePath;
         if (score >= 200) {
             // Strong state 2
-            return GameController.getInstance().loadImage(
-                    "/resources/images/characters/strong_2/" + characterType + "/" + baseName);
+            imagePath = "/resources/images/characters/strong_2/" + characterType + "/" + baseName;
         } else if (score >= 100) {
             // Strong state 1
-            return GameController.getInstance().loadImage(
-                    "/resources/images/characters/strong_1/" + characterType + "/" + baseName);
+            imagePath = "/resources/images/characters/strong_1/" + characterType + "/" + baseName;
         } else {
             // Base state
-            return GameController.getInstance().loadImage(baseCharacterPath);
+            imagePath = baseCharacterPath;
         }
+
+        return GameController.getInstance().loadImage(imagePath);
     }
 
     private void updateCharacterImages() {

@@ -44,10 +44,9 @@ public class TutorialScreen extends JPanel implements Screen {
         // Step 2: Card Types
         tutorialSteps.add(new TutorialStep(
                 "Tipos de Cartas",
-                "Hay cuatro tipos de cartas:\n" +
-                        "- Cartas de Frutas\n" +
-                        "- Cartas de Proteinas\n" +
-                        "- Cartas de Verduras \n" +
+                "- Cartas de Frutas\n" +
+                        "- Cartas de Proteínas\n" +
+                        "- Cartas de Verduras\n" +
                         "- Cartas de Comida Chatarra",
                 "/resources/images/characters/cimarron.png"
         ));
@@ -94,12 +93,16 @@ public class TutorialScreen extends JPanel implements Screen {
         add(contentPanel, BorderLayout.CENTER);
 
         // Button Panel
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 20));
         buttonPanel.setOpaque(false);
 
         prevButton = new JButton("Anterior");
         nextButton = new JButton("Siguiente");
         skipButton = new JButton("Saltar Tutorial");
+
+        prevButton.setFont(new Font("Arial", Font.BOLD, 24));
+        nextButton.setFont(new Font("Arial", Font.BOLD, 24));
+        skipButton.setFont(new Font("Arial", Font.BOLD, 24));
 
         prevButton.addActionListener(e -> previousStep());
         nextButton.addActionListener(e -> nextStep());
@@ -120,11 +123,11 @@ public class TutorialScreen extends JPanel implements Screen {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(20, 20, 20, 20);
 
         // Title
         JLabel titleLabel = new JLabel(step.getTitle(), SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 36));
         titleLabel.setForeground(Color.WHITE);
         gbc.gridy = 0;
         contentPanel.add(titleLabel, gbc);
@@ -142,7 +145,7 @@ public class TutorialScreen extends JPanel implements Screen {
         descArea.setLineWrap(true);
         descArea.setOpaque(false);
         descArea.setEditable(false);
-        descArea.setFont(new Font("Arial", Font.PLAIN, 16));
+        descArea.setFont(new Font("Arial", Font.PLAIN, 24));
         descArea.setForeground(Color.WHITE);
         gbc.gridy = 2;
         contentPanel.add(descArea, gbc);
@@ -150,6 +153,7 @@ public class TutorialScreen extends JPanel implements Screen {
         // Progress indicator
         JLabel progressLabel = new JLabel(String.format("Paso %d de %d",
                 currentStep + 1, tutorialSteps.size()), SwingConstants.CENTER);
+        progressLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         progressLabel.setForeground(Color.WHITE);
         gbc.gridy = 3;
         contentPanel.add(progressLabel, gbc);

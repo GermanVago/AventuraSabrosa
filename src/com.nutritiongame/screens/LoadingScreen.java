@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import com.nutritiongame.GameController;
 import com.nutritiongame.Screen;
+import com.nutritiongame.audio.SoundManager;
 
 public class LoadingScreen extends JPanel implements Screen {
     private Image backgroundImage;
@@ -11,12 +12,25 @@ public class LoadingScreen extends JPanel implements Screen {
 
     public LoadingScreen() {
         setLayout(null);
-        // Path exactly as it appears in the repository
         backgroundImage = GameController.getInstance().loadImage("/resources/images/backgrounds/PANTALLA DE CARGA.png");
 
-        startButton = new JButton("Comenzar");
-        startButton.setBounds(412, 500, 200, 50);
-        startButton.addActionListener(e -> handleStartButton());
+        // Create transparent button
+        startButton = new JButton();
+        // Make button transparent
+        startButton.setOpaque(false);
+        startButton.setContentAreaFilled(false);
+        startButton.setBorderPainted(false);
+        // Position and size for the button to overlay the "COMENZAR" text
+        startButton.setBounds(362, 490, 300, 80); // Adjust these values to match your image
+
+        startButton.addActionListener(e -> {
+            SoundManager.getInstance().playSound("button_click");
+            handleStartButton();
+        });
+
+        // Add hover effect (optional)
+        startButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
         add(startButton);
     }
 
@@ -29,12 +43,6 @@ public class LoadingScreen extends JPanel implements Screen {
         super.paintComponent(g);
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-        } else {
-            // Draw a fallback background if image fails to load
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, getWidth(), getHeight());
-            g.setColor(Color.BLACK);
-            g.drawString("Loading Screen", getWidth()/2 - 50, getHeight()/2);
         }
     }
 

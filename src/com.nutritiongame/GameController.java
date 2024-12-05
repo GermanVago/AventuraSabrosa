@@ -82,8 +82,33 @@ public class GameController {
                     System.err.println("Cannot find image: " + file.getAbsolutePath());
                     return createPlaceholderImage();
                 }
+
                 ImageIcon icon = new ImageIcon(file.getAbsolutePath());
-                imageCache.put(path, icon.getImage());
+                Image image = icon.getImage();
+
+                // Define the desired width and height for character images
+                int characterWidth = 350;
+                int characterHeight = 400;
+
+                // Scale character images to consistent size when loading
+                if (path.contains("/characters/")) {
+                    if (path.contains("/characters/strong_1/") || path.contains("/characters/strong_2/")) {
+                        // Scale up the strong state images to match the base character size
+                        Image scaled = image.getScaledInstance(characterWidth, characterHeight, Image.SCALE_SMOOTH);
+                        imageCache.put(path, scaled);
+                        return scaled;
+                    } else {
+                        // Scale the base character image if needed
+                        if (image.getWidth(null) != characterWidth || image.getHeight(null) != characterHeight) {
+                            Image scaled = image.getScaledInstance(characterWidth, characterHeight, Image.SCALE_SMOOTH);
+                            imageCache.put(path, scaled);
+                            return scaled;
+                        }
+                    }
+                }
+
+                imageCache.put(path, image);
+
             } catch (Exception e) {
                 System.err.println("Error loading image: " + path);
                 e.printStackTrace();
