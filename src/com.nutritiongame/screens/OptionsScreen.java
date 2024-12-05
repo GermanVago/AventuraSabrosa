@@ -2,8 +2,6 @@ package com.nutritiongame.screens;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import com.nutritiongame.GameController;
 import com.nutritiongame.Screen;
@@ -15,9 +13,8 @@ public class OptionsScreen extends JPanel implements Screen {
     private JSlider effectsVolumeSlider;
     private JLabel musicValueLabel;
     private JLabel effectsValueLabel;
-    private JCheckBox fullscreenCheckbox;
     private JButton backButton;
-    private JButton applyButton;
+    private JPanel contentPanel;
 
     public OptionsScreen() {
         setLayout(new BorderLayout());
@@ -35,25 +32,24 @@ public class OptionsScreen extends JPanel implements Screen {
     }
 
     private void initializeValues() {
-        // Set initial values from SoundManager
         musicVolumeSlider.setValue((int)(SoundManager.getInstance().getMusicVolume() * 100));
         effectsVolumeSlider.setValue((int)(SoundManager.getInstance().getEffectsVolume() * 100));
 
-        // Set initial fullscreen state
-        Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
-        fullscreenCheckbox.setSelected(frame != null && frame.isUndecorated());
+        // Update labels
+        musicValueLabel.setText(musicVolumeSlider.getValue() + "%");
+        effectsValueLabel.setText(effectsVolumeSlider.getValue() + "%");
     }
 
     private void setupComponents() {
         // Main content panel
-        JPanel contentPanel = new JPanel();
+        contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setOpaque(false);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Title
         JLabel titleLabel = new JLabel("Opciones", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 36));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         contentPanel.add(titleLabel);
@@ -69,13 +65,41 @@ public class OptionsScreen extends JPanel implements Screen {
         contentPanel.add(visualPanel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Buttons panel
-        JPanel buttonPanel = createButtonPanel();
-
         // Wrap content in center panel
         JPanel centerWrapper = new JPanel(new GridBagLayout());
         centerWrapper.setOpaque(false);
         centerWrapper.add(contentPanel);
+
+        // Back button
+        backButton = new JButton("Volver");
+        backButton.setPreferredSize(new Dimension(200, 60));
+        backButton.setFont(new Font("Arial", Font.BOLD, 20));
+        backButton.setFocusPainted(false);
+        backButton.setBackground(new Color(51, 51, 51));
+        backButton.setForeground(Color.WHITE);
+        backButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.WHITE, 3),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+
+        backButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                backButton.setBackground(new Color(75, 75, 75));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                backButton.setBackground(new Color(51, 51, 51));
+            }
+        });
+
+        backButton.addActionListener(e -> {
+            SoundManager.getInstance().playSound("button_click");
+            GameController.getInstance().switchScreen(new MainMenu());
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(backButton);
 
         add(centerWrapper, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -98,12 +122,20 @@ public class OptionsScreen extends JPanel implements Screen {
         JPanel musicPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         musicPanel.setOpaque(false);
         JLabel musicLabel = new JLabel("Música:");
+        musicLabel.setFont(new Font("Arial", Font.BOLD, 16));
         musicLabel.setForeground(Color.WHITE);
         musicValueLabel = new JLabel("50%");
+        musicValueLabel.setFont(new Font("Arial", Font.BOLD, 16));
         musicValueLabel.setForeground(Color.WHITE);
+
         musicVolumeSlider = new JSlider(0, 100, 50);
         musicVolumeSlider.setOpaque(false);
-        addSliderVisualFeedback(musicVolumeSlider, musicValueLabel, true);
+        musicVolumeSlider.addChangeListener(e -> {
+            float volume = musicVolumeSlider.getValue() / 100f;
+            SoundManager.getInstance().setMusicVolume(volume);
+            musicValueLabel.setText(musicVolumeSlider.getValue() + "%");
+        });
+
         musicPanel.add(musicLabel);
         musicPanel.add(musicVolumeSlider);
         musicPanel.add(musicValueLabel);
@@ -112,12 +144,23 @@ public class OptionsScreen extends JPanel implements Screen {
         JPanel effectsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         effectsPanel.setOpaque(false);
         JLabel effectsLabel = new JLabel("Efectos:");
+        effectsLabel.setFont(new Font("Arial", Font.BOLD, 16));
         effectsLabel.setForeground(Color.WHITE);
         effectsValueLabel = new JLabel("50%");
+        effectsValueLabel.setFont(new Font("Arial", Font.BOLD, 16));
         effectsValueLabel.setForeground(Color.WHITE);
+
         effectsVolumeSlider = new JSlider(0, 100, 50);
         effectsVolumeSlider.setOpaque(false);
-        addSliderVisualFeedback(effectsVolumeSlider, effectsValueLabel, false);
+        effectsVolumeSlider.addChangeListener(e -> {
+            float volume = effectsVolumeSlider.getValue() / 100f;
+            SoundManager.getInstance().setEffectsVolume(volume);
+            effectsValueLabel.setText(effectsVolumeSlider.getValue() + "%");
+            if (!effectsVolumeSlider.getValueIsAdjusting()) {
+                SoundManager.getInstance().playSound("button_click");
+            }
+        });
+
         effectsPanel.add(effectsLabel);
         effectsPanel.add(effectsVolumeSlider);
         effectsPanel.add(effectsValueLabel);
@@ -126,28 +169,6 @@ public class OptionsScreen extends JPanel implements Screen {
         panel.add(effectsPanel);
 
         return panel;
-    }
-
-    private void addSliderVisualFeedback(JSlider slider, JLabel valueLabel, boolean isMusic) {
-        slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int value = slider.getValue();
-                valueLabel.setText(value + "%");
-
-                // Update volume in real-time
-                float volume = value / 100f;
-                if (isMusic) {
-                    SoundManager.getInstance().setMusicVolume(volume);
-                } else {
-                    SoundManager.getInstance().setEffectsVolume(volume);
-                    if (!slider.getValueIsAdjusting()) {
-                        // Play test sound when slider is released
-                        SoundManager.getInstance().playSound("button_click");
-                    }
-                }
-            }
-        });
     }
 
     private JPanel createVisualPanel() {
@@ -163,116 +184,52 @@ public class OptionsScreen extends JPanel implements Screen {
                 Color.WHITE
         ));
 
-        // Fullscreen option
-        JPanel fullscreenPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        fullscreenPanel.setOpaque(false);
-        fullscreenCheckbox = new JCheckBox("Pantalla Completa");
-        fullscreenCheckbox.setForeground(Color.WHITE);
-        fullscreenCheckbox.setOpaque(false);
-        fullscreenPanel.add(fullscreenCheckbox);
+        // Screen mode buttons
+        JPanel screenModePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        screenModePanel.setOpaque(false);
 
-        panel.add(fullscreenPanel);
+        JButton windowedButton = new JButton("Ventana");
+        JButton fullscreenButton = new JButton("Pantalla Completa");
 
-        return panel;
-    }
+        // Style both buttons
+        for (JButton button : new JButton[]{windowedButton, fullscreenButton}) {
+            button.setPreferredSize(new Dimension(200, 60));
+            button.setFont(new Font("Arial", Font.BOLD, 20));
+            button.setFocusPainted(false);
+            button.setBackground(new Color(51, 51, 51));
+            button.setForeground(Color.WHITE);
+            button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.WHITE, 3),
+                    BorderFactory.createEmptyBorder(10, 20, 10, 20)
+            ));
 
-    private JPanel createButtonPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        panel.setOpaque(false);
+            button.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    button.setBackground(new Color(75, 75, 75));
+                }
 
-        applyButton = new JButton("Aplicar");
-        backButton = new JButton("Volver");
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    button.setBackground(new Color(51, 51, 51));
+                }
+            });
+        }
 
-        styleButton(applyButton);
-        styleButton(backButton);
-
-        applyButton.addActionListener(e -> applySettings());
-        backButton.addActionListener(e -> {
+        // Add actions
+        windowedButton.addActionListener(e -> {
             SoundManager.getInstance().playSound("button_click");
-            GameController.getInstance().switchScreen(new MainMenu());
+            GameController.getInstance().toggleFullscreen(false);
         });
 
-        panel.add(applyButton);
-        panel.add(backButton);
+        fullscreenButton.addActionListener(e -> {
+            SoundManager.getInstance().playSound("button_click");
+            GameController.getInstance().toggleFullscreen(true);
+        });
+
+        screenModePanel.add(windowedButton);
+        screenModePanel.add(fullscreenButton);
+        panel.add(screenModePanel);
 
         return panel;
-    }
-
-    private void styleButton(JButton button) {
-        button.setPreferredSize(new Dimension(120, 40));
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setFocusPainted(false);
-        button.setBackground(new Color(51, 51, 51));
-        button.setForeground(Color.WHITE);
-        button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.WHITE, 2),
-                BorderFactory.createEmptyBorder(5, 15, 5, 15)
-        ));
-
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(75, 75, 75));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(51, 51, 51));
-            }
-        });
-    }
-
-    private void toggleFullscreen(boolean fullscreen) {
-        try {
-            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            GraphicsDevice gd = ge.getDefaultScreenDevice();
-
-            if (fullscreen) {
-                frame.dispose();
-                frame.setUndecorated(true);
-                gd.setFullScreenWindow(frame);
-            } else {
-                frame.dispose();
-                frame.setUndecorated(false);
-                gd.setFullScreenWindow(null);
-                frame.setSize(1024, 768);
-                frame.setLocationRelativeTo(null);
-            }
-            frame.setVisible(true);
-        } catch (Exception e) {
-            System.err.println("Error toggling fullscreen: " + e.getMessage());
-            JOptionPane.showMessageDialog(this,
-                    "Error al cambiar el modo de pantalla",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void applySettings() {
-        try {
-            // Apply volume settings
-            float musicVolume = musicVolumeSlider.getValue() / 100f;
-            float effectsVolume = effectsVolumeSlider.getValue() / 100f;
-            SoundManager.getInstance().setMusicVolume(musicVolume);
-            SoundManager.getInstance().setEffectsVolume(effectsVolume);
-
-            // Apply fullscreen setting
-            toggleFullscreen(fullscreenCheckbox.isSelected());
-
-            // Play confirmation sound
-            SoundManager.getInstance().playSound("button_click");
-
-            // Show success message
-            JOptionPane.showMessageDialog(this,
-                    "Configuración aplicada exitosamente",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            System.err.println("Error applying settings: " + e.getMessage());
-            JOptionPane.showMessageDialog(this,
-                    "Error al aplicar la configuración",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
     }
 
     @Override
@@ -280,7 +237,6 @@ public class OptionsScreen extends JPanel implements Screen {
         super.paintComponent(g);
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-            // Add semi-transparent overlay
             g.setColor(new Color(0, 0, 0, 160));
             g.fillRect(0, 0, getWidth(), getHeight());
         }
